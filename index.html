@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,61 +11,46 @@
             font-family: 'Inter', sans-serif;
             overflow: hidden;
         }
-
         #chat-messages::-webkit-scrollbar {
             width: 8px;
         }
-
         #chat-messages::-webkit-scrollbar-track {
             background: #36393f;
         }
-
         #chat-messages::-webkit-scrollbar-thumb {
             background: #202225;
             border-radius: 4px;
         }
-
         .message-actions {
             display: none;
         }
-
         .message-container:hover .message-actions {
             display: flex;
         }
     </style>
 </head>
-
 <body class="bg-gray-700 text-gray-200 h-full flex flex-col">
 
-    <div id="name-modal"
-        class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
+    <div id="name-modal" class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
         <div class="bg-gray-700 p-8 rounded-lg shadow-xl w-full max-w-sm">
             <h2 class="text-2xl font-bold mb-4 text-white">Choose Your Name</h2>
             <form id="name-form">
-                <input type="text" id="name-input" placeholder="Enter your name"
-                    class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required>
-                <button type="submit"
-                    class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                <input type="text" id="name-input" placeholder="Enter your name" class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <button type="submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                     Set Name
                 </button>
             </form>
         </div>
     </div>
-
-    <div id="edit-modal"
-        class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
+    
+    <div id="edit-modal" class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
         <div class="bg-gray-700 p-8 rounded-lg shadow-xl w-full max-w-md">
             <h2 class="text-2xl font-bold mb-4 text-white">Edit Message</h2>
             <form id="edit-form">
-                <textarea id="edit-input"
-                    class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="3" required></textarea>
+                <textarea id="edit-input" class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" required></textarea>
                 <div class="flex justify-end space-x-4 mt-4">
-                    <button type="button" id="cancel-edit-btn"
-                        class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
-                    <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Save</button>
+                    <button type="button" id="cancel-edit-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Save</button>
                 </div>
             </form>
         </div>
@@ -82,11 +66,8 @@
 
     <footer class="p-4 bg-gray-800">
         <form id="message-form" class="flex items-center space-x-4">
-            <input type="text" id="message-input" placeholder="Message in #general"
-                class="flex-1 bg-gray-600 rounded-lg px-4 py-2 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autocomplete="off">
-            <button type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+            <input type="text" id="message-input" placeholder="Message in #general" class="flex-1 bg-gray-600 rounded-lg px-4 py-2 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" autocomplete="off">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                 Send
             </button>
         </form>
@@ -97,19 +78,22 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Firebase configuration and app ID are provided by the environment
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
+        // Initialize Firebase app
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        setLogLevel('error');
+        setLogLevel('error'); // Set Firebase logging level to error to reduce console noise
 
+        // Get DOM elements
         const chatMessages = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const userInfo = document.getElementById('user-info');
-
+        
         const nameModal = document.getElementById('name-modal');
         const nameForm = document.getElementById('name-form');
         const nameInput = document.getElementById('name-input');
@@ -118,50 +102,68 @@
         const editForm = document.getElementById('edit-form');
         const editInput = document.getElementById('edit-input');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
-
+        
+        // Global state variables
         let currentUserId = null;
         let currentUserName = 'Anonymous';
-        let messagesUnsubscribe = null;
-        let editingMessageId = null;
+        let messagesUnsubscribe = null; // To store the unsubscribe function for the message listener
+        let editingMessageId = null; // To track the ID of the message being edited
 
+        /**
+         * Formats a Firebase Timestamp object into a readable time string.
+         * @param {firebase.firestore.Timestamp} firebaseTimestamp - The timestamp to format.
+         * @returns {string} The formatted time string.
+         */
         function formatTimestamp(firebaseTimestamp) {
             if (!firebaseTimestamp) return '';
             const date = firebaseTimestamp.toDate();
+            // Format time as HH:MM
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        /**
+         * Creates an HTML element for a chat message.
+         * @param {firebase.firestore.DocumentSnapshot} doc - The Firestore document snapshot for the message.
+         * @returns {HTMLElement} The created message element.
+         */
         function createMessageElement(doc) {
             const data = doc.data();
             const messageId = doc.id;
 
+            // Main container for the message
             const messageContainer = document.createElement('div');
             messageContainer.id = messageId;
             messageContainer.className = 'message-container flex items-start space-x-4 p-2 rounded-md hover:bg-gray-600/50';
 
+            // Avatar placeholder
             const avatar = document.createElement('div');
-            avatar.className = 'w-10 h-10 rounded-full bg-gray-800 flex-shrink-0';
+            avatar.className = 'w-10 h-10 rounded-full bg-gray-800 flex-shrink-0'; // Simple grey circle
 
+            // Content area for author, timestamp, and message text
             const content = document.createElement('div');
             content.className = 'flex-1';
 
+            // Header for author name and timestamp
             const header = document.createElement('div');
             header.className = 'flex items-baseline space-x-2';
-
+            
             const author = document.createElement('span');
             author.className = 'font-bold text-white';
-            author.textContent = data.authorName || 'Anonymous';
-
+            author.textContent = data.authorName || 'Anonymous'; // Display author name or 'Anonymous'
+            
             const timestamp = document.createElement('span');
             timestamp.className = 'text-xs text-gray-400';
-            timestamp.textContent = formatTimestamp(data.timestamp);
+            timestamp.textContent = formatTimestamp(data.timestamp); // Format and display timestamp
 
             header.appendChild(author);
             header.appendChild(timestamp);
 
+            // Message text content
             const text = document.createElement('p');
-            text.className = 'text-gray-300 whitespace-pre-wrap';
+            text.className = 'text-gray-300 whitespace-pre-wrap'; // Preserve whitespace and line breaks
             text.textContent = data.text;
-
+            
+            // Add 'edited' indicator if the message has been edited
             if (data.edited) {
                 const editedSpan = document.createElement('span');
                 editedSpan.className = 'text-xs text-gray-400 ml-1'
@@ -171,23 +173,24 @@
 
             content.appendChild(header);
             content.appendChild(text);
-
+            
             messageContainer.appendChild(avatar);
             messageContainer.appendChild(content);
 
+            // Add edit and delete buttons if the message belongs to the current user
             if (data.authorId === currentUserId) {
                 const actions = document.createElement('div');
-                actions.className = 'message-actions space-x-2';
+                actions.className = 'message-actions space-x-2'; // Hidden by default, shown on hover
 
                 const editBtn = document.createElement('button');
-                editBtn.textContent = '✏️';
+                editBtn.textContent = '✏️'; // Pencil emoji for edit
                 editBtn.className = 'edit-btn text-xs bg-gray-500 hover:bg-gray-400 p-1 rounded';
-                editBtn.dataset.id = messageId;
+                editBtn.dataset.id = messageId; // Store message ID for editing
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '🗑️';
+                deleteBtn.textContent = '🗑️'; // Trash can emoji for delete
                 deleteBtn.className = 'delete-btn text-xs bg-red-800 hover:bg-red-700 p-1 rounded';
-                deleteBtn.dataset.id = messageId;
+                deleteBtn.dataset.id = messageId; // Store message ID for deleting
 
                 actions.appendChild(editBtn);
                 actions.appendChild(deleteBtn);
@@ -197,18 +200,25 @@
             return messageContainer;
         }
 
+        /**
+         * Handles changes to individual message documents (added, modified, removed).
+         * @param {firebase.firestore.DocumentChange} change - The document change object.
+         */
         function handleDocChange(change) {
             const doc = change.doc;
             const messageId = doc.id;
 
             if (change.type === "added") {
+                // Add new message to the chat display
                 const messageElement = createMessageElement(doc);
                 chatMessages.appendChild(messageElement);
+                // Scroll to bottom if user is near the bottom
                 if (chatMessages.scrollHeight - chatMessages.scrollTop < chatMessages.clientHeight + 200) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }
             if (change.type === "modified") {
+                // Update existing message
                 const existingElement = document.getElementById(messageId);
                 if (existingElement) {
                     const newElement = createMessageElement(doc);
@@ -216,6 +226,7 @@
                 }
             }
             if (change.type === "removed") {
+                // Remove message from display
                 const elementToRemove = document.getElementById(messageId);
                 if (elementToRemove) {
                     elementToRemove.remove();
@@ -223,22 +234,38 @@
             }
         }
 
+        /**
+         * Sets up the real-time listener for chat messages from Firestore.
+         */
         async function setupMessageListener() {
+            // Unsubscribe from previous listener if it exists
             if (messagesUnsubscribe) messagesUnsubscribe();
-
+            
+            // Define the collection reference for messages
             const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
-            const q = query(messagesRef);
+            // Create a query to order messages by timestamp (ascending)
+            const q = query(messagesRef); // Note: orderBy() is removed as per instructions, sorting will be done client-side if needed
 
+            // Set up the real-time snapshot listener
             messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+                // Sort changes by timestamp before processing to ensure correct order
                 const sortedChanges = snapshot.docChanges().sort((a, b) => {
                     const timeA = a.doc.data().timestamp?.toMillis() || 0;
                     const timeB = b.doc.data().timestamp?.toMillis() || 0;
                     return timeA - timeB;
                 });
-                sortedChanges.forEach(handleDocChange);
-            }, (error) => console.error("Error fetching messages: ", error));
+                sortedChanges.forEach(handleDocChange); // Process each change
+            }, (error) => {
+                console.error("Error fetching messages: ", error);
+                // Handle error, e.g., display a message to the user
+            });
         }
 
+        /**
+         * Loads the user's profile (display name) from Firestore.
+         * If no profile exists, it shows the name input modal.
+         * @param {string} userId - The current user's ID.
+         */
         async function loadUserProfile(userId) {
             try {
                 const userRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
@@ -247,74 +274,87 @@
                 if (userSnap.exists()) {
                     currentUserName = userSnap.data().displayName;
                 } else {
+                    // If no user profile, prompt for a name
                     nameModal.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error("Could not fetch user profile:", error);
-                currentUserName = 'Anonymous';
+                currentUserName = 'Anonymous'; // Fallback to anonymous
             } finally {
+                // Always update user info in the header
                 updateUserInfo();
-                await setupMessageListener();
             }
         }
 
+        /**
+         * Updates the user information displayed in the header.
+         */
         function updateUserInfo() {
             userInfo.innerHTML = `
                 <span>Logged in as: <strong class="text-white">${currentUserName}</strong></span>
                 <button id="change-name-btn" class="ml-4 text-blue-400 hover:underline text-xs">[Change Name]</button>
             `;
+            // Add event listener to the "Change Name" button
             document.getElementById('change-name-btn').addEventListener('click', () => {
-                nameInput.value = currentUserName;
-                nameModal.classList.remove('hidden');
+                nameInput.value = currentUserName; // Pre-fill with current name
+                nameModal.classList.remove('hidden'); // Show the name modal
             });
         }
 
+        // Event listener for sending new messages
         messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (text && currentUserId) {
+            e.preventDefault(); // Prevent default form submission
+            const text = messageInput.value.trim(); // Get message text and trim whitespace
+            if (text && currentUserId) { // Only send if text is not empty and user is authenticated
                 try {
                     await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
                         text: text,
                         authorId: currentUserId,
                         authorName: currentUserName,
-                        timestamp: serverTimestamp(),
+                        timestamp: serverTimestamp(), // Use Firestore server timestamp
                         edited: false
                     });
-                    messageInput.value = '';
+                    messageInput.value = ''; // Clear input field after sending
                 } catch (error) {
                     console.error("Error sending message: ", error);
                 }
             }
         });
 
+        // Event listener for setting user name
         nameForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newName = nameInput.value.trim();
             if (newName && currentUserId) {
                 const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
-                await setDoc(userRef, { displayName: newName });
-                currentUserName = newName;
-                updateUserInfo();
-                nameModal.classList.add('hidden');
+                await setDoc(userRef, { displayName: newName }); // Save display name to Firestore
+                currentUserName = newName; // Update local user name
+                updateUserInfo(); // Update header display
+                nameModal.classList.add('hidden'); // Hide the modal
             }
         });
 
+        // Event listener for message actions (edit/delete) using event delegation
         chatMessages.addEventListener('click', async (e) => {
+            // Handle delete button click
             if (e.target.matches('.delete-btn')) {
                 const messageId = e.target.dataset.id;
                 const messageRef = doc(db, `artifacts/${appId}/public/data/messages`, messageId);
-                await deleteDoc(messageRef);
+                await deleteDoc(messageRef); // Delete message from Firestore
             }
+            // Handle edit button click
             if (e.target.matches('.edit-btn')) {
                 editingMessageId = e.target.dataset.id;
                 const messageElement = document.getElementById(editingMessageId);
-                const currentText = messageElement.querySelector('p').childNodes[0].textContent;
-                editInput.value = currentText;
-                editModal.classList.remove('hidden');
+                // Get the current text, excluding the '(edited)' span if present
+                const currentTextNode = messageElement.querySelector('p').childNodes[0];
+                const currentText = currentTextNode ? currentTextNode.textContent : '';
+                editInput.value = currentText; // Populate edit input with current text
+                editModal.classList.remove('hidden'); // Show edit modal
             }
         });
 
+        // Event listener for saving edited message
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newText = editInput.value.trim();
@@ -322,37 +362,46 @@
                 const messageRef = doc(db, `artifacts/${appId}/public/data/messages`, editingMessageId);
                 await updateDoc(messageRef, {
                     text: newText,
-                    edited: true
+                    edited: true // Mark message as edited
                 });
-                editModal.classList.add('hidden');
-                editingMessageId = null;
+                editModal.classList.add('hidden'); // Hide modal
+                editingMessageId = null; // Reset editing state
             }
         });
 
+        // Event listener for canceling message edit
         cancelEditBtn.addEventListener('click', () => {
-            editModal.classList.add('hidden');
-            editingMessageId = null;
+            editModal.classList.add('hidden'); // Hide modal
+            editingMessageId = null; // Reset editing state
         });
 
+        // Firebase Authentication State Observer
         onAuthStateChanged(auth, async (user) => {
-            if (user && !currentUserId) {
-                currentUserId = user.uid;
-                await loadUserProfile(user.uid);
-            } else if (!user) {
+            if (user) {
+                // User is signed in.
+                if (!currentUserId) { // Only run this block once when the user first signs in
+                    currentUserId = user.uid;
+                    await loadUserProfile(user.uid); // Load user profile (name)
+                    await setupMessageListener(); // Start listening for messages immediately
+                }
+            } else {
+                // User is signed out or not authenticated yet.
                 try {
                     const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                     if (token) {
+                        // Sign in with custom token if provided by the environment
                         await signInWithCustomToken(auth, token);
                     } else {
+                        // Otherwise, sign in anonymously
                         await signInAnonymously(auth);
                     }
                 } catch (error) {
                     console.error("Authentication failed:", error);
-                    // Optionally, you could display an error message to the user here
+                    // Display an error message to the user if authentication fails
+                    userInfo.innerHTML = '<span class="text-red-400">Authentication Failed. Please refresh.</span>';
                 }
             }
         });
     </script>
 </body>
-
 </html>
