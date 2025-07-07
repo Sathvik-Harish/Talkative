@@ -238,6 +238,7 @@
          * Sets up the real-time listener for chat messages from Firestore.
          */
         async function setupMessageListener() {
+            console.log("Attempting to set up message listener...");
             // Unsubscribe from previous listener if it exists
             if (messagesUnsubscribe) messagesUnsubscribe();
             
@@ -248,6 +249,7 @@
 
             // Set up the real-time snapshot listener
             messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+                console.log("Message snapshot received:", snapshot.docChanges().length, " changes.");
                 // Sort changes by timestamp before processing to ensure correct order
                 const sortedChanges = snapshot.docChanges().sort((a, b) => {
                     const timeA = a.doc.data().timestamp?.toMillis() || 0;
@@ -267,13 +269,16 @@
          * @param {string} userId - The current user's ID.
          */
         async function loadUserProfile(userId) {
+            console.log("Loading user profile for userId:", userId);
             try {
                 const userRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists()) {
                     currentUserName = userSnap.data().displayName;
+                    console.log("User profile found. Name:", currentUserName);
                 } else {
+                    console.log("User profile not found. Showing name modal.");
                     // If no user profile, prompt for a name
                     nameModal.classList.remove('hidden');
                 }
@@ -307,6 +312,7 @@
             const text = messageInput.value.trim(); // Get message text and trim whitespace
             if (text && currentUserId) { // Only send if text is not empty and user is authenticated
                 try {
+                    console.log("Sending message:", text);
                     await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
                         text: text,
                         authorId: currentUserId,
@@ -326,6 +332,7 @@
             e.preventDefault();
             const newName = nameInput.value.trim();
             if (newName && currentUserId) {
+                console.log("Setting user name to:", newName);
                 const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
                 await setDoc(userRef, { displayName: newName }); // Save display name to Firestore
                 currentUserName = newName; // Update local user name
@@ -339,6 +346,7 @@
             // Handle delete button click
             if (e.target.matches('.delete-btn')) {
                 const messageId = e.target.dataset.id;
+                console.log("Deleting message:", messageId);
                 const messageRef = doc(db, `artifacts/${appId}/public/data/messages`, messageId);
                 await deleteDoc(messageRef); // Delete message from Firestore
             }
@@ -351,6 +359,7 @@
                 const currentText = currentTextNode ? currentTextNode.textContent : '';
                 editInput.value = currentText; // Populate edit input with current text
                 editModal.classList.remove('hidden'); // Show edit modal
+                console.log("Editing message:", editingMessageId, "Current text:", currentText);
             }
         });
 
@@ -359,6 +368,7 @@
             e.preventDefault();
             const newText = editInput.value.trim();
             if (newText && editingMessageId) {
+                console.log("Saving edited message:", editingMessageId, "New text:", newText);
                 const messageRef = doc(db, `artifacts/${appId}/public/data/messages`, editingMessageId);
                 await updateDoc(messageRef, {
                     text: newText,
@@ -371,6 +381,7 @@
 
         // Event listener for canceling message edit
         cancelEditBtn.addEventListener('click', () => {
+            console.log("Edit cancelled.");
             editModal.classList.add('hidden'); // Hide modal
             editingMessageId = null; // Reset editing state
         });
@@ -378,6 +389,7 @@
         // Firebase Authentication State Observer
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                console.log("Auth state changed: User is signed in.", user.uid);
                 // User is signed in.
                 if (!currentUserId) { // Only run this block once when the user first signs in
                     currentUserId = user.uid;
@@ -385,13 +397,16 @@
                     await setupMessageListener(); // Start listening for messages immediately
                 }
             } else {
+                console.log("Auth state changed: No user signed in. Attempting to sign in.");
                 // User is signed out or not authenticated yet.
                 try {
                     const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                     if (token) {
+                        console.log("Signing in with custom token.");
                         // Sign in with custom token if provided by the environment
                         await signInWithCustomToken(auth, token);
                     } else {
+                        console.log("Signing in anonymously.");
                         // Otherwise, sign in anonymously
                         await signInAnonymously(auth);
                     }
