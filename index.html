@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,56 +12,61 @@
             font-family: 'Inter', sans-serif;
             overflow: hidden;
         }
+
         #chat-messages::-webkit-scrollbar {
             width: 8px;
         }
+
         #chat-messages::-webkit-scrollbar-track {
             background: #36393f;
         }
+
         #chat-messages::-webkit-scrollbar-thumb {
             background: #202225;
             border-radius: 4px;
         }
+
         .message-actions {
             display: none;
         }
+
         .message-container:hover .message-actions {
             display: flex;
         }
     </style>
 </head>
+
 <body class="bg-gray-700 text-gray-200 h-full flex flex-col">
 
-    <div id="loading-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-        <div class="flex items-center space-x-2 text-white">
-            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Loading Chat...</span>
-        </div>
-    </div>
-
-    <div id="name-modal" class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
+    <div id="name-modal"
+        class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
         <div class="bg-gray-700 p-8 rounded-lg shadow-xl w-full max-w-sm">
             <h2 class="text-2xl font-bold mb-4 text-white">Choose Your Name</h2>
             <form id="name-form">
-                <input type="text" id="name-input" placeholder="Enter your name" class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <button type="submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                <input type="text" id="name-input" placeholder="Enter your name"
+                    class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+                <button type="submit"
+                    class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                     Set Name
                 </button>
             </form>
         </div>
     </div>
-    
-    <div id="edit-modal" class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
+
+    <div id="edit-modal"
+        class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-40">
         <div class="bg-gray-700 p-8 rounded-lg shadow-xl w-full max-w-md">
             <h2 class="text-2xl font-bold mb-4 text-white">Edit Message</h2>
             <form id="edit-form">
-                <textarea id="edit-input" class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" required></textarea>
+                <textarea id="edit-input"
+                    class="w-full bg-gray-800 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3" required></textarea>
                 <div class="flex justify-end space-x-4 mt-4">
-                    <button type="button" id="cancel-edit-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Save</button>
+                    <button type="button" id="cancel-edit-btn"
+                        class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">Save</button>
                 </div>
             </form>
         </div>
@@ -76,8 +82,11 @@
 
     <footer class="p-4 bg-gray-800">
         <form id="message-form" class="flex items-center space-x-4">
-            <input type="text" id="message-input" placeholder="Message in #general" class="flex-1 bg-gray-600 rounded-lg px-4 py-2 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" autocomplete="off">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+            <input type="text" id="message-input" placeholder="Message in #general"
+                class="flex-1 bg-gray-600 rounded-lg px-4 py-2 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autocomplete="off">
+            <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                 Send
             </button>
         </form>
@@ -96,12 +105,11 @@
         const db = getFirestore(app);
         setLogLevel('error');
 
-        const loadingOverlay = document.getElementById('loading-overlay');
         const chatMessages = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const userInfo = document.getElementById('user-info');
-        
+
         const nameModal = document.getElementById('name-modal');
         const nameForm = document.getElementById('name-form');
         const nameInput = document.getElementById('name-input');
@@ -110,7 +118,7 @@
         const editForm = document.getElementById('edit-form');
         const editInput = document.getElementById('edit-input');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        
+
         let currentUserId = null;
         let currentUserName = 'Anonymous';
         let messagesUnsubscribe = null;
@@ -132,17 +140,17 @@
 
             const avatar = document.createElement('div');
             avatar.className = 'w-10 h-10 rounded-full bg-gray-800 flex-shrink-0';
-            
+
             const content = document.createElement('div');
             content.className = 'flex-1';
 
             const header = document.createElement('div');
             header.className = 'flex items-baseline space-x-2';
-            
+
             const author = document.createElement('span');
             author.className = 'font-bold text-white';
             author.textContent = data.authorName || 'Anonymous';
-            
+
             const timestamp = document.createElement('span');
             timestamp.className = 'text-xs text-gray-400';
             timestamp.textContent = formatTimestamp(data.timestamp);
@@ -153,7 +161,7 @@
             const text = document.createElement('p');
             text.className = 'text-gray-300 whitespace-pre-wrap';
             text.textContent = data.text;
-            
+
             if (data.edited) {
                 const editedSpan = document.createElement('span');
                 editedSpan.className = 'text-xs text-gray-400 ml-1'
@@ -163,7 +171,7 @@
 
             content.appendChild(header);
             content.appendChild(text);
-            
+
             messageContainer.appendChild(avatar);
             messageContainer.appendChild(content);
 
@@ -217,7 +225,7 @@
 
         async function setupMessageListener() {
             if (messagesUnsubscribe) messagesUnsubscribe();
-            
+
             const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
             const q = query(messagesRef);
 
@@ -247,7 +255,6 @@
             } finally {
                 updateUserInfo();
                 await setupMessageListener();
-                loadingOverlay.style.display = 'none';
             }
         }
 
@@ -341,10 +348,11 @@
                     }
                 } catch (error) {
                     console.error("Authentication failed:", error);
-                    loadingOverlay.innerHTML = '<span>Authentication Failed. Please refresh.</span>';
+                    // Optionally, you could display an error message to the user here
                 }
             }
         });
     </script>
 </body>
+
 </html>
